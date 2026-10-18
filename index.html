@@ -1,0 +1,1855 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Demo Banking App</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b10;
+        --panel: #151b23;
+        --panel2: #202833;
+        --muted: #9ca8b7;
+        --text: #f6f8fb;
+        --accent: #4db6ac;
+        --accent2: #ffb547;
+        --border: #303a47;
+        --good: #58d68d;
+        --bad: #ff7777;
+        --nav-height: 72px;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top, #17242b 0, #080b10 42%);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color: var(--text);
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        justify-content: center;
+        padding: 18px;
+        overflow: hidden;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid var(--accent2);
+        outline-offset: 2px;
+      }
+
+      /* APP CONTAINER */
+      .app-container {
+        width: min(100%, 480px);
+        height: 100%;
+        max-height: 900px;
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        background: rgba(12, 16, 22, 0.97);
+        flex-direction: column;
+        box-shadow: 0 24px 80px #0008;
+        position: relative;
+        overflow: hidden;
+
+        /* Hidden state */
+        display: none;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      .app-container.unlocked {
+        display: flex; /* Restores flex layout */
+        opacity: 1;
+      }
+
+      /* LOGIN SCREEN */
+      .login-container {
+        width: min(100%, 480px);
+        height: 100%;
+        max-height: 900px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 32px;
+        animation: fadeIn 0.5s ease;
+      }
+
+      .login-container.hidden {
+        display: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .login-logo {
+        font-size: 40px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, var(--accent), #256a83);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+        letter-spacing: -2px;
+      }
+
+      .login-heading {
+        font-size: 24px;
+        font-weight: 800;
+        margin: 0 0 8px;
+      }
+
+      .login-sub {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 32px;
+        line-height: 1.5;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .login-input {
+        width: 100%;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 14px 16px;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: border-color 0.2s;
+      }
+
+      .login-input:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+
+      .login-btn {
+        background: var(--accent);
+        color: #052320;
+        border: 0;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 15px;
+        width: 100%;
+        margin-top: 10px;
+        transition: transform 0.1s;
+      }
+
+      .login-btn:active {
+        transform: scale(0.98);
+      }
+
+      .demo-warning {
+        background: #ffb54715;
+        border: 1px solid #ffb54740;
+        color: var(--accent2);
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 11px;
+        text-align: center;
+        margin-top: 24px;
+        line-height: 1.4;
+      }
+
+      /* HEADER & BALANCE CARD */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 20px;
+        border-bottom: 1px solid #ffffff0c;
+        flex-shrink: 0;
+        background: #0c1016;
+        z-index: 2;
+      }
+
+      .icon-btn {
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--text);
+        border-radius: 12px;
+        width: 40px;
+        height: 40px;
+        font-size: 19px;
+        display: grid;
+        place-items: center;
+      }
+
+      .header-title {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        text-align: center;
+      }
+      .header-sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 3px;
+        text-align: center;
+      }
+
+      .balance-card {
+        background: linear-gradient(130deg, #267f79, #4db6ac);
+        margin: 18px 18px 12px;
+        border-radius: 20px;
+        padding: 20px;
+        color: #fff;
+        box-shadow: 0 12px 30px #4db6ac24;
+        flex-shrink: 0;
+      }
+      .balance-label {
+        font-size: 12px;
+        opacity: 0.9;
+      }
+      .balance-amount {
+        font-size: clamp(25px, 7vw, 32px);
+        font-weight: 800;
+        letter-spacing: -0.7px;
+        margin: 5px 0 15px;
+      }
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        gap: 8px;
+      }
+      .progress-bar {
+        height: 7px;
+        background: #ffffff50;
+        border-radius: 20px;
+        margin: 10px 0 12px;
+        overflow: hidden;
+      }
+      .progress {
+        height: 100%;
+        width: 15%;
+        background: var(--accent2);
+        border-radius: 20px;
+        transition: width 0.25s;
+      }
+      .spent-remaining {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 11px;
+        flex-wrap: wrap;
+      }
+
+      /* TABS */
+      .tabs {
+        display: flex;
+        margin: 0 18px;
+        border-bottom: 1px solid var(--border);
+        gap: 22px;
+        flex-shrink: 0;
+      }
+      .tab {
+        padding: 14px 2px 12px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: none;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .tab.active {
+        color: var(--accent2);
+        border-bottom-color: var(--accent2);
+      }
+
+      /* MAIN CONTENT AREAS */
+      .view-wrapper {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 20px;
+      }
+      .view-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+      .view-wrapper {
+        scrollbar-width: none;
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .filters {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 14px 18px 8px;
+        scrollbar-width: none;
+      }
+      .filters::-webkit-scrollbar {
+        display: none;
+      }
+      .filter-btn {
+        white-space: nowrap;
+        background: var(--panel);
+        color: #c5cfda;
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+      .filter-btn.active {
+        background: var(--accent2);
+        border-color: var(--accent2);
+        color: #1b1b1b;
+        font-weight: 800;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        padding: 8px 18px;
+        align-items: center;
+      }
+      .search {
+        min-width: 0;
+        flex: 1;
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      .date-range {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 18px 10px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 11px;
+        color: #dce4ec;
+      }
+      .date-range input {
+        width: 0;
+        min-width: 0;
+        flex: 1;
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        font-size: 11px;
+      }
+
+      .transaction-list {
+        padding: 0 18px 10px;
+        flex: 1;
+      }
+      .transaction {
+        background: var(--panel);
+        border: 1px solid #ffffff09;
+        padding: 13px 12px;
+        border-radius: 14px;
+        margin-bottom: 9px;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.15s;
+      }
+      .transaction:active {
+        background: var(--panel2);
+      }
+      .tx-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .tx-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: var(--panel2);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .tx-name {
+        font-size: 12px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+      }
+      .transaction small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 4px;
+      }
+
+      .amount {
+        text-align: right;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .positive {
+        color: var(--good);
+      }
+      .negative {
+        color: var(--text);
+      }
+
+      .status {
+        display: inline-block;
+        margin-top: 5px;
+        padding: 3px 6px;
+        border-radius: 5px;
+        font-size: 9px;
+        background: #58d68d20;
+        color: var(--good);
+      }
+      .status.pending {
+        background: #ffb54720;
+        color: var(--accent2);
+      }
+
+      .empty {
+        color: var(--muted);
+        text-align: center;
+        padding: 38px 12px;
+        font-size: 13px;
+      }
+
+      .view-more {
+        align-self: center;
+        background: var(--accent);
+        color: #052320;
+        border: 0;
+        padding: 11px 24px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 12px;
+        margin: 8px auto 18px;
+      }
+      .view-more:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      /* SCREEN PANELS */
+      .screen-panel {
+        padding: 18px;
+        display: none;
+        flex: 1;
+      }
+      .screen-panel.visible {
+        display: block;
+      }
+      .statement-panel {
+        padding: 18px;
+        display: none;
+      }
+      .statement-panel.visible {
+        display: block;
+      }
+
+      .screen-heading {
+        font-size: 19px;
+        font-weight: 800;
+        margin: 2px 0 5px;
+      }
+      .screen-subtitle {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 18px;
+        line-height: 1.5;
+      }
+
+      .info-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+      .info-card h3 {
+        font-size: 13px;
+        margin: 0 0 8px;
+      }
+      .info-card p {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .stat-box {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 13px;
+      }
+      .stat-label {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .stat-value {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 7px;
+      }
+
+      .action-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .action-row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+      .action-row:first-child {
+        padding-top: 0;
+      }
+      .action-row strong {
+        display: block;
+        font-size: 12px;
+      }
+      .action-row small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 4px;
+      }
+
+      .bank-card {
+        border-radius: 18px;
+        padding: 19px;
+        margin-bottom: 12px;
+        min-height: 150px;
+        background: linear-gradient(130deg, #182c45, #286b80);
+        border: 1px solid #ffffff20;
+        position: relative;
+        overflow: hidden;
+      }
+      .bank-card:after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px solid #ffffff22;
+        border-radius: 50%;
+        right: -35px;
+        top: 35px;
+      }
+      .card-top,
+      .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .card-chip {
+        font-size: 23px;
+      }
+      .card-number {
+        font-size: 16px;
+        letter-spacing: 2px;
+        margin: 24px 0 18px;
+      }
+      .card-bottom small {
+        font-size: 9px;
+        color: #d4e0e8;
+        display: block;
+      }
+      .card-bottom strong {
+        font-size: 11px;
+      }
+
+      .profile-avatar {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #256a83);
+        display: grid;
+        place-items: center;
+        font-size: 21px;
+        font-weight: 900;
+        color: #06221f;
+        margin-bottom: 12px;
+      }
+      .toggle-switch {
+        accent-color: var(--accent);
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .statement-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 10px;
+      }
+      .statement-card h3 {
+        font-size: 14px;
+        margin: 0 0 6px;
+      }
+      .statement-card p {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+      .statement-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .small-btn {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        border-radius: 9px;
+        font-size: 11px;
+      }
+      .small-btn.primary {
+        background: var(--accent);
+        color: #052320;
+        border-color: var(--accent);
+        font-weight: 800;
+      }
+      .small-btn:active {
+        opacity: 0.8;
+      }
+
+      /* FIXED BOTTOM NAVIGATION */
+      .bottom-nav {
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-around;
+        padding: 12px 8px;
+        background: #0c1016;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: var(--nav-height);
+        z-index: 10;
+        border-radius: 0 0 28px 28px;
+      }
+
+      .nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        background: none;
+        border: 0;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 500;
+        min-width: 58px;
+        transition: transform 0.1s;
+      }
+      .nav-btn span:first-child {
+        font-size: 18px;
+      }
+      .nav-btn.active {
+        color: var(--accent2);
+      }
+      .nav-btn:active {
+        transform: scale(0.9);
+      }
+
+      /* TOAST & MODAL */
+      .toast {
+        position: absolute;
+        bottom: calc(var(--nav-height) + 16px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #eafbf6;
+        color: #10221f;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px #0007;
+        font-size: 12px;
+        font-weight: 700;
+        display: none;
+        z-index: 15;
+        max-width: calc(100% - 32px);
+        text-align: center;
+        animation: slideUp 0.3s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          bottom: calc(var(--nav-height));
+        }
+        to {
+          opacity: 1;
+          bottom: calc(var(--nav-height) + 16px);
+        }
+      }
+
+      .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: #0009;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 20;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+      .modal {
+        width: min(100%, 380px);
+        background: #111821;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 20px 60px #0008;
+      }
+      .modal h2 {
+        font-size: 17px;
+        margin: 0 0 8px;
+      }
+      .modal p {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 18px;
+      }
+
+      /* MOBILE SPECIFIC TWEAKS */
+      @media (max-width: 420px) {
+        body {
+          padding: 0;
+        }
+        .app-container,
+        .login-container {
+          max-height: none;
+          border-radius: 0;
+          border: 0;
+        }
+        .login-container {
+          padding: 24px;
+        }
+        .balance-card {
+          margin: 14px 14px 10px;
+          padding: 18px;
+        }
+        .tabs {
+          margin: 0 14px;
+        }
+        .filters,
+        .toolbar {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+        .date-range {
+          margin-left: 14px;
+          margin-right: 14px;
+        }
+        .transaction-list {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+        .bottom-nav {
+          border-radius: 0;
+          padding-bottom: max(12px, env(safe-area-inset-bottom));
+          height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+        }
+        .toast {
+          bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 16px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN SCREEN -->
+    <div class="login-container" id="loginView">
+      <div class="login-logo">◈</div>
+      <h1 class="login-heading">Welcome</h1>
+      <p class="login-sub">Enter your name to access your demo account.</p>
+
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="loginName">Your Name</label>
+          <input
+            type="text"
+            id="loginName"
+            class="login-input"
+            placeholder="e.g. Hamilton"
+            autocomplete="off"
+          />
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">Log In</button>
+      </form>
+
+      <div class="demo-warning">
+        🛡️ <strong>Demo Mode:</strong> No credentials required. If you leave the
+        name blank, it will default to "Hamilton".
+      </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="app-container" id="appContainer">
+      <header>
+        <button class="icon-btn" id="backBtn" aria-label="Go back">←</button>
+        <div>
+          <div class="header-title" id="headerTitle">HOME</div>
+          <div class="header-sub" id="headerSub">Account overview</div>
+        </div>
+        <button class="icon-btn" id="refreshBtn" aria-label="Refresh">↻</button>
+      </header>
+
+      <section
+        class="balance-card"
+        id="topBalanceCard"
+        aria-label="Account balance summary"
+      >
+        <div class="balance-label">Available balance</div>
+        <div class="balance-amount" id="balanceAmount">R324,536.60</div>
+        <div class="progress-meta">
+          <span>Monthly spending</span><span id="spendingPercent">15%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress" id="progress"></div>
+        </div>
+        <div class="spent-remaining">
+          <span id="spentText">Spent: R35,000.00</span>
+          <span id="remainingText">Remaining: R324,536.60</span>
+        </div>
+      </section>
+
+      <div class="tabs" role="tablist" id="topTabs">
+        <button class="tab active" id="tabAll" role="tab" aria-selected="true">
+          Transactions
+        </button>
+        <button class="tab" id="tabStatements" role="tab" aria-selected="false">
+          Statements
+        </button>
+      </div>
+
+      <div class="view-wrapper">
+        <!-- ACTIVITY VIEW -->
+        <main class="content" id="transactionView" style="display: none">
+          <div class="filters" aria-label="Transaction filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="in">Money In</button>
+            <button class="filter-btn" data-filter="out">Money Out</button>
+            <button class="filter-btn" data-filter="track">Track</button>
+          </div>
+          <div class="toolbar">
+            <input
+              class="search"
+              id="searchInput"
+              type="search"
+              placeholder="Search transactions..."
+              aria-label="Search transactions"
+            />
+            <button class="small-btn" id="exportBtn">Export</button>
+          </div>
+          <div class="date-range">
+            <span>From</span>
+            <input
+              type="date"
+              id="dateFrom"
+              value="2025-10-05"
+              aria-label="Start date"
+            />
+            <span>To</span>
+            <input
+              type="date"
+              id="dateTo"
+              value="2025-10-12"
+              aria-label="End date"
+            />
+          </div>
+          <div
+            class="transaction-list"
+            id="transactionList"
+            aria-live="polite"
+          ></div>
+          <button class="view-more" id="viewMoreBtn">View more</button>
+        </main>
+
+        <!-- HOME VIEW -->
+        <section class="screen-panel visible" id="homeView">
+          <div class="screen-heading" id="welcomeHeading">
+            Welcome back, Hamilton
+          </div>
+          <p class="screen-subtitle">
+            Here is your account overview. All figures shown are sample data for
+            this offline demo.
+          </p>
+
+          <div
+            class="info-card"
+            style="background: linear-gradient(130deg, #1c3b3b, #152b2b)"
+          >
+            <div class="stat-label">TOTAL AVAILABLE BALANCE</div>
+            <div
+              class="balance-amount"
+              style="margin: 7px 0 3px; color: var(--accent)"
+              id="homeBalance"
+            >
+              R324,536.60
+            </div>
+            <p>Sample account · Updated just now</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-label">MONEY IN</div>
+              <div class="stat-value positive" id="homeMoneyIn">R7,850.00</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">MONEY OUT</div>
+              <div class="stat-value" id="homeMoneyOut">R6,725.00</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3>Quick actions</h3>
+            <div class="action-row">
+              <div>
+                <strong>View activity</strong>
+                <small>Review your latest transactions</small>
+              </div>
+              <button class="small-btn primary" id="homeActivityBtn">
+                Open
+              </button>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Manage cards</strong>
+                <small>View demo card details and controls</small>
+              </div>
+              <button class="small-btn" id="homeCardsBtn">Open</button>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>My profile</strong>
+                <small>View owner and contact details</small>
+              </div>
+              <button class="small-btn" id="homeProfileBtn">Open</button>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3>Recent activity</h3>
+            <p id="homeRecent">Your latest transactions will appear here.</p>
+          </div>
+        </section>
+
+        <!-- CARDS VIEW -->
+        <section class="screen-panel" id="cardsView">
+          <div class="screen-heading">My cards</div>
+          <p class="screen-subtitle">
+            Manage your demo cards. These controls only change this page and are
+            not connected to a bank.
+          </p>
+          <div class="bank-card">
+            <div class="card-top">
+              <strong>DEMO BANK</strong><span class="card-chip">▦</span>
+            </div>
+            <div class="card-number">
+              •••• &nbsp; •••• &nbsp; •••• &nbsp; 4821
+            </div>
+            <div class="card-bottom">
+              <div>
+                <small>CARDHOLDER</small
+                ><strong id="cardHolderName">HAMILTON MASIPA</strong>
+              </div>
+              <div><small>EXPIRES</small><strong>10/29</strong></div>
+              <strong>VISA</strong>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="action-row">
+              <div>
+                <strong>Online payments</strong>
+                <small>Demo setting for online purchases</small>
+              </div>
+              <input
+                class="toggle-switch"
+                type="checkbox"
+                id="onlinePayments"
+                checked
+                aria-label="Toggle online payments"
+              />
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Contactless payments</strong>
+                <small>Demo setting for tap-to-pay</small>
+              </div>
+              <input
+                class="toggle-switch"
+                type="checkbox"
+                id="contactlessPayments"
+                checked
+                aria-label="Toggle contactless payments"
+              />
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Card status</strong>
+                <small id="cardStatusText">Card is active in this demo</small>
+              </div>
+              <button class="small-btn" id="freezeCardBtn">Freeze card</button>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3>Card information</h3>
+            <p>
+              This is a fictional demonstration card. No real card number,
+              payment method or banking service is connected.
+            </p>
+          </div>
+        </section>
+
+        <!-- PROFILE VIEW -->
+        <section class="screen-panel" id="profileView">
+          <div class="profile-avatar" id="profileAvatarInitials">HM</div>
+          <div class="screen-heading" id="profileDisplayName">
+            Hamilton Masipa
+          </div>
+          <p class="screen-subtitle">Account owner · Personal profile</p>
+          <div class="info-card">
+            <h3>Personal details</h3>
+            <div class="action-row">
+              <div>
+                <strong>Full name</strong>
+                <small id="profileNameDetail">Hamilton Masipa</small>
+              </div>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Account type</strong>
+                <small>Personal demo account</small>
+              </div>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Email address</strong>
+                <small id="profileEmailDetail"
+                  >hamilton.masipa@example.com</small
+                >
+              </div>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Phone number</strong>
+                <small id="profilePhoneDetail">Not provided</small>
+              </div>
+            </div>
+            <button
+              class="small-btn primary"
+              id="editProfileBtn"
+              style="margin-top: 14px; width: 100%"
+            >
+              Edit profile details
+            </button>
+            <button
+              class="small-btn"
+              id="logoutBtn"
+              style="
+                margin-top: 8px;
+                width: 100%;
+                border-color: #ff7777;
+                color: #ff7777;
+              "
+            >
+              Log out
+            </button>
+          </div>
+          <div class="info-card">
+            <h3>Preferences</h3>
+            <div class="action-row">
+              <div>
+                <strong>App notifications</strong>
+                <small>Show demo notifications in this page</small>
+              </div>
+              <input
+                class="toggle-switch"
+                type="checkbox"
+                id="notificationsToggle"
+                checked
+                aria-label="Toggle notifications"
+              />
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Privacy</strong>
+                <small>Data is stored only in this page session</small>
+              </div>
+              <span>🔒</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- STATEMENTS VIEW -->
+        <section class="statement-panel" id="statementView">
+          <div class="statement-card">
+            <h3>October 2025 statement</h3>
+            <p>05 Oct 2025 – 12 Oct 2025 · Demo statement</p>
+            <div class="statement-actions">
+              <button class="small-btn primary" data-statement="october">
+                Preview statement
+              </button>
+              <button class="small-btn" data-download="october">
+                Download CSV
+              </button>
+            </div>
+          </div>
+          <div class="statement-card">
+            <h3>September 2025 statement</h3>
+            <p>01 Sep 2025 – 30 Sep 2025 · Sample archive</p>
+            <div class="statement-actions">
+              <button class="small-btn primary" data-statement="september">
+                Preview statement
+              </button>
+              <button class="small-btn" data-download="september">
+                Download CSV
+              </button>
+            </div>
+          </div>
+          <div class="statement-card">
+            <h3>Statement information</h3>
+            <p>
+              This standalone demo uses sample data. It is not connected to a
+              bank and cannot issue official bank statements.
+            </p>
+          </div>
+        </section>
+      </div>
+      <!-- END VIEW WRAPPER -->
+
+      <nav class="bottom-nav" aria-label="Main navigation">
+        <button class="nav-btn active" data-nav="home">
+          <span>⌂</span><span>Home</span>
+        </button>
+        <button class="nav-btn" data-nav="activity">
+          <span>↕</span><span>Activity</span>
+        </button>
+        <button class="nav-btn" data-nav="cards">
+          <span>▣</span><span>Cards</span>
+        </button>
+        <button class="nav-btn" data-nav="profile">
+          <span>☻</span><span>Profile</span>
+        </button>
+      </nav>
+
+      <div class="toast" id="toast" role="status"></div>
+      <div
+        class="modal-backdrop"
+        id="modalBackdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal">
+          <h2 id="modalTitle">Details</h2>
+          <div id="modalBody"></div>
+          <div class="modal-actions">
+            <button class="small-btn" id="modalClose">Close</button>
+            <button class="small-btn primary" id="modalConfirm">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END APP CONTAINER -->
+
+    <script>
+      (() => {
+        // --- LOGIN LOGIC ---
+        const loginView = document.getElementById("loginView");
+        const appContainer = document.getElementById("appContainer");
+        const loginForm = document.getElementById("loginForm");
+        const loginBtn = document.getElementById("loginBtn");
+
+        function applyUserName(name) {
+          // Format name (e.g., "hamilton masipa" -> "Hamilton Masipa")
+          const formattedName = name
+            .trim()
+            .split(" ")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ");
+
+          // Get initials for avatar
+          const initials = formattedName
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
+
+          // Update DOM elements
+          document.getElementById("welcomeHeading").textContent =
+            `Welcome back, ${formattedName.split(" ")[0]}`;
+          document.getElementById("profileDisplayName").textContent =
+            formattedName;
+          document.getElementById("profileNameDetail").textContent =
+            formattedName;
+          document.getElementById("cardHolderName").textContent =
+            formattedName.toUpperCase();
+          document.getElementById("profileAvatarInitials").textContent =
+            initials || "HM";
+        }
+
+        // Check if user is already logged in (simulated session)
+        if (sessionStorage.getItem("demoLoggedIn") === "true") {
+          const savedName =
+            sessionStorage.getItem("demoUserName") || "Hamilton Masipa";
+          applyUserName(savedName);
+
+          loginView.classList.add("hidden");
+          appContainer.style.display = "flex";
+          setTimeout(() => {
+            appContainer.classList.add("unlocked");
+            showScreen("home");
+          }, 50);
+        }
+
+        loginForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          const inputName = document.getElementById("loginName").value.trim();
+          // Default to Hamilton if left blank
+          const finalName = inputName ? inputName : "Hamilton Masipa";
+
+          loginBtn.textContent = "Authenticating...";
+          loginBtn.style.opacity = "0.7";
+
+          setTimeout(() => {
+            sessionStorage.setItem("demoLoggedIn", "true");
+            sessionStorage.setItem("demoUserName", finalName);
+
+            applyUserName(finalName);
+
+            loginView.classList.add("hidden");
+            appContainer.style.display = "flex";
+
+            setTimeout(() => {
+              appContainer.classList.add("unlocked");
+              showScreen("home");
+            }, 50);
+          }, 600);
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          sessionStorage.removeItem("demoLoggedIn");
+          sessionStorage.removeItem("demoUserName");
+          window.location.reload();
+        });
+
+        // --- MAIN APP LOGIC ---
+        const initialTransactions = [
+          {
+            id: "TX1001",
+            name: "M. Mthembu",
+            date: "2025-10-09",
+            amount: 6300,
+            type: "in",
+            status: "Completed",
+            reference: "Salary payment",
+          },
+          {
+            id: "TX1002",
+            name: "NK Gumede",
+            date: "2025-10-08",
+            amount: -5000,
+            type: "out",
+            status: "Completed",
+            reference: "Transfer",
+          },
+          {
+            id: "TX1003",
+            name: "L Ntuli",
+            date: "2025-10-07",
+            amount: -260,
+            type: "out",
+            status: "Completed",
+            reference: "Purchase",
+          },
+          {
+            id: "TX1004",
+            name: "M. Mnguni",
+            date: "2025-10-06",
+            amount: -800,
+            type: "out",
+            status: "Pending",
+            reference: "Payment",
+          },
+          {
+            id: "TX1005",
+            name: "Nhloko",
+            date: "2025-10-05",
+            amount: -45,
+            type: "out",
+            status: "Completed",
+            reference: "Service fee",
+          },
+          {
+            id: "TX1006",
+            name: "Refund - Online Store",
+            date: "2025-10-04",
+            amount: 350,
+            type: "in",
+            status: "Completed",
+            reference: "Refund",
+          },
+          {
+            id: "TX1007",
+            name: "Electricity",
+            date: "2025-10-02",
+            amount: -620,
+            type: "out",
+            status: "Completed",
+            reference: "Utilities",
+          },
+          {
+            id: "TX1008",
+            name: "A. Dlamini",
+            date: "2025-09-29",
+            amount: 1200,
+            type: "in",
+            status: "Completed",
+            reference: "Transfer",
+          },
+        ];
+
+        let transactions = [...initialTransactions];
+        let activeFilter = "all";
+        let activeTab = "transactions";
+        let visibleCount = 5;
+        let trackIds = new Set(["TX1004"]);
+
+        const $ = (id) => document.getElementById(id);
+        const money = (n) =>
+          "R" +
+          Math.abs(n).toLocaleString("en-ZA", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        const prettyDate = (s) =>
+          new Date(s + "T12:00:00").toLocaleDateString("en-ZA", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+
+        function toast(message) {
+          const el = $("toast");
+          el.textContent = message;
+          el.style.display = "block";
+          clearTimeout(toast.timer);
+          toast.timer = setTimeout(() => (el.style.display = "none"), 2600);
+        }
+
+        function showModal(title, body, confirmText = "OK", onConfirm = null) {
+          $("modalTitle").textContent = title;
+          $("modalBody").innerHTML = body;
+          $("modalConfirm").textContent = confirmText;
+          $("modalBackdrop").classList.add("open");
+          $("modalConfirm").onclick = () => {
+            closeModal();
+            if (onConfirm) onConfirm();
+          };
+        }
+
+        function closeModal() {
+          $("modalBackdrop").classList.remove("open");
+        }
+
+        function filteredTransactions() {
+          const q = $("searchInput").value.trim().toLowerCase();
+          const from = $("dateFrom").value;
+          const to = $("dateTo").value;
+
+          return transactions
+            .filter((t) => {
+              if (activeFilter === "in" && t.amount <= 0) return false;
+              if (activeFilter === "out" && t.amount >= 0) return false;
+              if (activeFilter === "track" && !trackIds.has(t.id)) return false;
+              if (from && t.date < from) return false;
+              if (to && t.date > to) return false;
+              if (
+                q &&
+                ![t.name, t.reference, t.id, t.status].some((v) =>
+                  v.toLowerCase().includes(q),
+                )
+              )
+                return false;
+              return true;
+            })
+            .sort((a, b) => b.date.localeCompare(a.date));
+        }
+
+        function render() {
+          const list = $("transactionList");
+          const all = filteredTransactions();
+          const shown = all.slice(0, visibleCount);
+
+          list.innerHTML = "";
+
+          if (!shown.length) {
+            list.innerHTML =
+              '<div class="empty">No transactions match your filters.</div>';
+          }
+
+          shown.forEach((t) => {
+            const row = document.createElement("article");
+            row.className = "transaction";
+            row.tabIndex = 0;
+            row.setAttribute("role", "button");
+            row.setAttribute("aria-label", "View transaction " + t.id);
+
+            row.innerHTML = `
+              <div class="tx-left">
+                <div class="tx-icon">${t.amount > 0 ? "↙" : "↗"}</div>
+                <div>
+                  <div class="tx-name">${t.name}</div>
+                  <small>${prettyDate(t.date)} · ${t.id}</small>
+                  <span class="status ${t.status === "Pending" ? "pending" : ""}">${t.status}</span>
+                </div>
+              </div>
+              <div class="amount ${t.amount > 0 ? "positive" : "negative"}">
+                ${t.amount > 0 ? "+" : "−"}${money(t.amount)}
+              </div>
+            `;
+
+            row.addEventListener("click", () => transactionDetails(t));
+            row.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                transactionDetails(t);
+              }
+            });
+            list.append(row);
+          });
+
+          $("viewMoreBtn").style.display = all.length ? "block" : "none";
+          $("viewMoreBtn").disabled = visibleCount >= all.length;
+          $("viewMoreBtn").textContent =
+            visibleCount >= all.length
+              ? "All transactions shown"
+              : "View more (" + (all.length - visibleCount) + " left)";
+
+          const spent = transactions
+            .filter((t) => t.amount < 0)
+            .reduce((s, t) => s + Math.abs(t.amount), 0);
+          $("spentText").textContent = "Spent: " + money(spent);
+          $("remainingText").textContent = "Remaining: " + money(324536.6);
+          $("progress").style.width =
+            Math.min(100, (spent / 35000) * 100) + "%";
+          $("spendingPercent").textContent =
+            Math.min(100, Math.round((spent / 35000) * 100)) + "%";
+        }
+
+        function transactionDetails(t) {
+          showModal(
+            "Transaction details",
+            `<p><strong>${t.name}</strong></p><p>Amount: <strong>${t.amount > 0 ? "+" : "−"}${money(t.amount)}</strong></p><p>Date: ${prettyDate(t.date)}</p><p>Reference: ${t.reference}</p><p>Transaction ID: ${t.id}</p><p>Status: ${t.status}</p><p style="margin-top:12px; font-size:10px;">This is sample demo data, not a live banking record.</p>`,
+            trackIds.has(t.id) ? "Untrack" : "Track",
+            () => {
+              if (trackIds.has(t.id)) trackIds.delete(t.id);
+              else trackIds.add(t.id);
+              toast(
+                trackIds.has(t.id)
+                  ? "Transaction added to Track"
+                  : "Transaction removed from Track",
+              );
+              render();
+            },
+          );
+        }
+
+        function setFilter(filter) {
+          activeFilter = filter;
+          visibleCount = 5;
+          document
+            .querySelectorAll(".filter-btn")
+            .forEach((b) =>
+              b.classList.toggle("active", b.dataset.filter === filter),
+            );
+          render();
+        }
+
+        function setTab(tab) {
+          activeTab = tab;
+          const statements = tab === "statements";
+          $("transactionView").style.display = statements ? "none" : "flex";
+          $("statementView").classList.toggle("visible", statements);
+          $("tabAll").classList.toggle("active", !statements);
+          $("tabStatements").classList.toggle("active", statements);
+          $("tabAll").setAttribute("aria-selected", String(!statements));
+          $("tabStatements").setAttribute("aria-selected", String(statements));
+        }
+
+        function exportCSV(rows, filename = "transactions.csv") {
+          const csv = [
+            [
+              "Transaction ID",
+              "Name",
+              "Date",
+              "Amount (ZAR)",
+              "Type",
+              "Status",
+              "Reference",
+            ],
+            ...rows.map((t) => [
+              t.id,
+              t.name,
+              t.date,
+              t.amount.toFixed(2),
+              t.type,
+              t.status,
+              t.reference,
+            ]),
+          ]
+            .map((r) =>
+              r
+                .map((v) => '"' + String(v).replaceAll('"', '""') + '"')
+                .join(","),
+            )
+            .join("\r\n");
+
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.append(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          toast("CSV export prepared");
+        }
+
+        // EVENT LISTENERS
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) =>
+            b.addEventListener("click", () => setFilter(b.dataset.filter)),
+          );
+
+        $("tabAll").addEventListener("click", () => {
+          showScreen("activity");
+          setTab("transactions");
+        });
+        $("tabStatements").addEventListener("click", () => {
+          showScreen("activity");
+          setTab("statements");
+        });
+
+        $("searchInput").addEventListener("input", () => {
+          visibleCount = 5;
+          render();
+        });
+        $("dateFrom").addEventListener("change", render);
+        $("dateTo").addEventListener("change", render);
+        $("viewMoreBtn").addEventListener("click", () => {
+          visibleCount += 5;
+          render();
+        });
+        $("exportBtn").addEventListener("click", () =>
+          exportCSV(filteredTransactions()),
+        );
+
+        $("refreshBtn").addEventListener("click", () => {
+          transactions = [...transactions];
+          render();
+          toast("Transaction list refreshed");
+        });
+
+        $("backBtn").addEventListener("click", () => {
+          if (activeTab === "statements") setTab("transactions");
+          else
+            showModal(
+              "Transaction history",
+              "You are already on the transaction history demo.",
+            );
+        });
+
+        $("modalClose").addEventListener("click", closeModal);
+        $("modalBackdrop").addEventListener("click", (e) => {
+          if (e.target === $("modalBackdrop")) closeModal();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closeModal();
+        });
+
+        document.querySelectorAll("[data-statement]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const month = b.dataset.statement;
+            const rows = transactions.filter((t) =>
+              month === "october"
+                ? t.date.startsWith("2025-10")
+                : t.date.startsWith("2025-09"),
+            );
+            showModal(
+              month === "october"
+                ? "October 2025 statement"
+                : "September 2025 statement",
+              `<p>Statement period: ${month === "october" ? "05–12 October 2025" : "01–30 September 2025"}</p><p>Transactions available in this sample: ${rows.length}</p><p>Total money in: ${money(rows.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0))}</p><p>Total money out: ${money(rows.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0))}</p><p>This is a preview generated from sample data, not an official statement.</p>`,
+            );
+          }),
+        );
+
+        document.querySelectorAll("[data-download]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const month = b.dataset.download;
+            exportCSV(
+              transactions.filter((t) =>
+                month === "october"
+                  ? t.date.startsWith("2025-10")
+                  : t.date.startsWith("2025-09"),
+              ),
+              month + "-2025-statement.csv",
+            );
+          }),
+        );
+
+        // NAVIGATION & SCREEN MANAGER
+        function showScreen(name) {
+          const views = {
+            home: $("homeView"),
+            activity: $("transactionView"),
+            cards: $("cardsView"),
+            profile: $("profileView"),
+          };
+
+          // Hide all
+          Object.values(views).forEach((el) => {
+            el.style.display = "none";
+            el.classList.remove("visible");
+          });
+
+          $("statementView").classList.remove("visible");
+
+          // Show target
+          if (name === "activity") {
+            views[name].style.display = "flex";
+            $("topBalanceCard").style.display = "block";
+            $("topTabs").style.display = "flex";
+            $("headerTitle").textContent = "TRANSACTION HISTORY";
+            $("headerSub").textContent = "Account activity overview";
+          } else {
+            views[name].style.display = "block";
+            views[name].classList.add("visible");
+            $("topBalanceCard").style.display = "none";
+            $("topTabs").style.display = "none";
+
+            if (name === "home") {
+              $("headerTitle").textContent = "HOME";
+              $("headerSub").textContent = "Account overview";
+            } else if (name === "cards") {
+              $("headerTitle").textContent = "MY CARDS";
+              $("headerSub").textContent = "Card management";
+            } else if (name === "profile") {
+              $("headerTitle").textContent = "PROFILE";
+              $("headerSub").textContent = "Personal settings";
+            }
+          }
+
+          $("tabAll").classList.toggle(
+            "active",
+            name === "activity" && activeTab !== "statements",
+          );
+          $("tabStatements").classList.toggle(
+            "active",
+            name === "activity" && activeTab === "statements",
+          );
+
+          document
+            .querySelectorAll("[data-nav]")
+            .forEach((n) =>
+              n.classList.toggle("active", n.dataset.nav === name),
+            );
+
+          if (name === "activity") setTab("transactions");
+          if (name === "home") updateHome();
+        }
+
+        function updateHome() {
+          const incoming = transactions
+            .filter((t) => t.amount > 0)
+            .reduce((s, t) => s + t.amount, 0);
+          const outgoing = transactions
+            .filter((t) => t.amount < 0)
+            .reduce((s, t) => s + Math.abs(t.amount), 0);
+          $("homeMoneyIn").textContent = money(incoming);
+          $("homeMoneyOut").textContent = money(outgoing);
+
+          const recent = [...transactions]
+            .sort((a, b) => b.date.localeCompare(a.date))
+            .slice(0, 2);
+          $("homeRecent").textContent = recent.length
+            ? recent
+                .map(
+                  (t) =>
+                    `${t.name} (${prettyDate(t.date)}): ${t.amount > 0 ? "+" : "−"}${money(t.amount)}`,
+                )
+                .join(" · ")
+            : "No recent transactions.";
+        }
+
+        document
+          .querySelectorAll("[data-nav]")
+          .forEach((b) =>
+            b.addEventListener("click", () => showScreen(b.dataset.nav)),
+          );
+
+        $("homeActivityBtn").addEventListener("click", () =>
+          showScreen("activity"),
+        );
+        $("homeCardsBtn").addEventListener("click", () => showScreen("cards"));
+        $("homeProfileBtn").addEventListener("click", () =>
+          showScreen("profile"),
+        );
+
+        // CARDS & PROFILE TOGGLES
+        let cardFrozen = false;
+        $("freezeCardBtn").addEventListener("click", () => {
+          cardFrozen = !cardFrozen;
+          $("freezeCardBtn").textContent = cardFrozen
+            ? "Unfreeze card"
+            : "Freeze card";
+          $("cardStatusText").textContent = cardFrozen
+            ? "Card is frozen in this demo"
+            : "Card is active in this demo";
+          toast(cardFrozen ? "Demo card frozen" : "Demo card unfrozen");
+        });
+
+        $("onlinePayments").addEventListener("change", (e) =>
+          toast(
+            "Online payments " +
+              (e.target.checked ? "enabled" : "disabled") +
+              " for this demo",
+          ),
+        );
+        $("contactlessPayments").addEventListener("change", (e) =>
+          toast(
+            "Contactless payments " +
+              (e.target.checked ? "enabled" : "disabled") +
+              " for this demo",
+          ),
+        );
+        $("notificationsToggle").addEventListener("change", (e) =>
+          toast(
+            "Demo notifications " + (e.target.checked ? "enabled" : "disabled"),
+          ),
+        );
+
+        $("editProfileBtn").addEventListener("click", () =>
+          showModal(
+            "Edit profile details",
+            '<label for="editName" style="font-size:12px;">Full name</label><input class="search" id="editName" style="width:100%;margin:6px 0 12px" value="' +
+              $("profileDisplayName").textContent.replaceAll('"', "&quot;") +
+              '">' +
+              '<label for="editEmail" style="font-size:12px;">Email address</label><input class="search" id="editEmail" style="width:100%;margin:6px 0 12px" type="email" value="' +
+              $("profileEmailDetail").textContent.replaceAll('"', "&quot;") +
+              '">' +
+              '<label for="editPhone" style="font-size:12px;">Phone number</label><input class="search" id="editPhone" style="width:100%;margin:6px 0 12px" value="' +
+              $("profilePhoneDetail").textContent.replaceAll('"', "&quot;") +
+              '">' +
+              '<p style="font-size:10px; margin-top:4px;">Changes apply only to this open demo page.</p>',
+            "Save changes",
+            () => {
+              const name = $("editName")?.value.trim();
+              const email = $("editEmail")?.value.trim();
+              const phone = $("editPhone")?.value.trim();
+
+              if (!name) {
+                toast("Please enter a name");
+                return;
+              }
+              if (email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+                toast("Please enter a valid email");
+                return;
+              }
+
+              applyUserName(name); // Update visuals everywhere
+              $("profileEmailDetail").textContent = email || "Not provided";
+              $("profilePhoneDetail").textContent = phone || "Not provided";
+              toast("Profile updated for this session");
+            },
+          ),
+        );
+
+        // INIT APP (if already logged in)
+        if (sessionStorage.getItem("demoLoggedIn") === "true") {
+          render();
+          updateHome();
+          showScreen("home");
+        }
+      })();
+    </script>
+  </body>
+</html>
